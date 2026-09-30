@@ -374,7 +374,8 @@ async def stats():
         health = round(100 * d["ok"] / total, 2) if total else 0.0
         ms_kt = round(d["ms_sum"] / max(d["out"], 1) * 1000) if d["out"] else 0
         per_model.append({"model": m, "health": health, "ms_per_ktoken": ms_kt,
-                          "requests": d["requests"], "in": d["in"], "out": d["out"]})
+                          "requests": d["requests"], "errors": d["err"],
+                          "in": d["in"], "out": d["out"]})
     per_model.sort(key=lambda x: -x["requests"])
     total = _TOTALS
     rate = total["ok"] / total["requests"] * 100 if total["requests"] else 0.0

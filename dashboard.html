@@ -29,32 +29,33 @@ a{color:var(--blue);text-decoration:none}
 .card .k{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:2px}
 .card .spark{margin-top:6px;display:block;width:100%;height:26px}
 table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);text-align:right;padding:8px 12px;background:var(--panel2);font-weight:600}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);text-align:right;padding:9px 14px;background:var(--panel2);font-weight:600;white-space:nowrap}
 th.l{text-align:left}
-td{padding:8px 12px;border-top:1px solid var(--line);font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right}
+td{padding:8px 14px;border-top:1px solid var(--line);font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 td.l{text-align:left}
 tbody tr:nth-child(even){background:var(--panel2)}
 td.num{color:var(--blue)}
 td.num.o{color:var(--amber)}
 td.lat{color:var(--dim)}
+td.mut{color:var(--dim)}
 .mc{font-weight:600}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
 .dot.ok{background:var(--ok)} .dot.bad{background:var(--red)} .dot.idle{background:var(--dim)}
+.tier{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:1px 7px}
+.tier.free{color:var(--ok);border-color:var(--ok)}
+.tier.paid{color:var(--amber);border-color:var(--amber)}
 .h{color:var(--ok)} .h.mid{color:var(--amber)} .h.low{color:var(--red)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.two{display:grid;grid-template-columns:5fr 7fr;gap:14px;align-items:stretch}
 @media(max-width:900px){.two{grid-template-columns:1fr}}
-.bars{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
-.bar{display:grid;grid-template-columns:200px 1fr 90px;gap:10px;align-items:center;padding:5px 0}
+.bars{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(120px,180px) 1fr 80px;gap:10px;align-items:center;padding:3px 0}
 .bar .n{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .track{background:var(--panel2);border-radius:4px;height:14px;overflow:hidden}
 .bar .fill{height:100%;border-radius:4px;min-width:2px}
 .bar .t{text-align:right;color:var(--blue);font-variant-numeric:tabular-nums;font-size:12px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:12px}
-.chip .tier{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:1px 6px}
-.chip .tier.free{color:var(--ok);border-color:var(--ok)}
-.chip .tier.paid{color:var(--amber);border-color:var(--amber)}
-.empty{color:var(--dim);padding:10px 12px;text-align:left}
+.empty{color:var(--dim);padding:10px 14px;text-align:left}
 .foot{max-width:1150px;margin:0 auto;padding:14px 20px 18px;color:var(--dim);font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 </style>
 </head>
@@ -80,8 +81,10 @@ td.lat{color:var(--dim)}
   </div>
 
   <div class="lbl">model usage</div>
-  <table id="pm"><thead><tr><th class="l">model</th><th>req</th><th>health</th><th>ms / ktoken</th><th>in</th><th>out</th></tr></thead>
-  <tbody><tr><td colspan="6" class="empty">no requests yet</td></tr></tbody></table>
+  <table id="pm"><thead><tr>
+    <th class="l">model</th><th>tier</th><th>req</th><th>err</th><th>health</th><th>ms / ktoken</th><th>in</th><th>out</th><th>tabs</th><th class="l" style="text-align:left">browser</th>
+  </tr></thead>
+  <tbody><tr><td colspan="10" class="empty">loading…</td></tr></tbody></table>
 
   <div class="two">
     <div>
@@ -89,9 +92,6 @@ td.lat{color:var(--dim)}
       <div class="bars" id="bars"><div class="empty">no data yet</div></div>
     </div>
     <div>
-      <div class="lbl">pools</div>
-      <table id="pool"><thead><tr><th class="l">model</th><th>tabs</th><th>browser</th></tr></thead>
-      <tbody><tr><td colspan="3" class="empty">—</td></tr></tbody></table>
       <div class="lbl">recent requests</div>
       <table id="rr"><thead><tr><th class="l">model</th><th>in</th><th>out</th><th>ms</th><th>status</th></tr></thead>
       <tbody><tr><td colspan="5" class="empty">—</td></tr></tbody></table>
@@ -110,9 +110,10 @@ td.lat{color:var(--dim)}
 const $=id=>document.getElementById(id);
 const fmt=n=>(n??0).toLocaleString('id-ID');
 function fmtUp(s){const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+"d "+h+"h":h?h+"h "+m+"m":m+"m "+(s%60)+"s";}
-const MCOLORS=["#67e8f9","#c4b5fd","#fdba74","#f9a8d4","#4ade80","#e8b64c","#93c5fd","#f87171"];
+const MCOLORS=["#67e8f9","#c4b5fd","#fdba74","#f9a8d4","#4ade80","#e8b64c","#93c5fd","#f87171","#a3e635","#f472b6"];
 function mcolor(name){let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;return MCOLORS[h%MCOLORS.length];}
-function healthCls(h){return h>=90?"h":h>=75?"h mid":"h low";}
+function healthCls(h){return h==null?"mut":h>=90?"h":h>=75?"h mid":"h low";}
+let CATALOG={}; // id -> {access}
 // --- history rings for sparklines ---
 const HIST={req:[],inn:[],out:[],ms:[]};
 function pushHist(s){
@@ -122,7 +123,7 @@ function pushHist(s){
 }
 function spark(id,data,color){
   const c=document.getElementById(id); if(!c) return;
-  const w=c.width=c.offsetWidth*2, h=c.height=52;
+  const w=c.width=c.offsetWidth*2||c.width, h=c.height=52;
   const x=c.getContext('2d');
   x.clearRect(0,0,w,h);
   if(data.length<2) return;
@@ -133,9 +134,25 @@ function spark(id,data,color){
     i?x.lineTo(px,py):x.moveTo(px,py);
   });
   x.stroke();
-  // last point dot
-  const lx=w, ly=h-4-((data[data.length-1]-min)/(max-min||1))*(h-10);
-  x.fillStyle=color;x.beginPath();x.arc(lx-4,ly,4,0,7);x.fill();
+  const ly=h-4-((data[data.length-1]-min)/(max-min||1))*(h-10);
+  x.fillStyle=color;x.beginPath();x.arc(w-4,ly,4,0,7);x.fill();
+}
+async function loadModels(){
+  try{
+    const j=await (await fetch("/v1/models")).json();
+    CATALOG={}; j.data.forEach(m=>CATALOG[m.id]=m.access||"free");
+    $("chips").innerHTML=j.data.map(m=>
+      `<span class="chip"><span class="dot ok"></span><span class="mc" style="color:${mcolor(m.id)}">${m.id}</span>`+
+      `<span class="tier ${m.access}">${m.access}</span></span>`).join("");
+  }catch(e){$("chips").innerHTML="<span class='chip' style='color:var(--red)'>catalog unavailable</span>";}
+}
+async function loadHealth(){
+  try{
+    const d=await (await fetch("/health")).json();
+    const p=$("p-status");p.textContent=d.status;p.className="pill "+(d.status==="ok"?"ok":"");
+    $("p-uptime").textContent="up "+fmtUp(d.uptime_s||0);
+    window.POOLS=d.pools||{};
+  }catch(e){$("p-status").textContent="down";}
 }
 async function loadStats(){
   try{
@@ -151,14 +168,28 @@ async function loadStats(){
     spark("sp-in",HIST.inn,"#60a5fa");
     spark("sp-out",HIST.out,"#f87171");
     spark("sp-ms",HIST.ms,"#e8b64c");
+    // --- merged model usage table: every catalog model, one row each ---
+    const st={}; s.per_model.forEach(m=>st[m.model]=m);
+    const ids=[...new Set([...Object.keys(CATALOG),...Object.keys(st)])];
+    const pool=window.POOLS||{};
     const tb=document.querySelector("#pm tbody");
-    tb.innerHTML=s.per_model.length?s.per_model.map(m=>
-      `<tr><td class="mc l" style="color:${mcolor(m.model)}">${m.model}</td><td>${fmt(m.requests)}</td>`+
-      `<td class="${healthCls(m.health)}">${m.health}%</td><td class="lat">${fmt(m.ms_per_ktoken)}</td>`+
-      `<td class="num">${fmt(m["in"])}</td><td class="num o">${fmt(m["out"])}</td></tr>`).join("")
-      :"<tr><td colspan=6 class='empty'>no requests yet</td></tr>";
-    // token share bars (in+out per model)
-    const shares=s.per_model.map(m=>({n:m.model,t:m["in"]+m["out"]}));
+    tb.innerHTML=ids.length?ids.map(id=>{
+      const m=st[id]||{}; const p=pool[id]||{};
+      const tier=CATALOG[id]||"—";
+      const used=!!st[id];
+      return `<tr><td class="mc l" style="color:${mcolor(id)}">${id}</td>`+
+        `<td><span class="tier ${tier}">${tier}</span></td>`+
+        `<td class="${used?"":"mut"}">${fmt(m.requests)}</td>`+
+        `<td class="${m.errors?"":"mut"}">${fmt(m.errors)}</td>`+
+        `<td class="${healthCls(m.health)}">${used?(m.health+"%"):"—"}</td>`+
+        `<td class="lat">${used?fmt(m.ms_per_ktoken):"—"}</td>`+
+        `<td class="num ${used?"":"mut"}">${fmt(m["in"])}</td>`+
+        `<td class="num o ${used?"":"mut"}">${fmt(m["out"])}</td>`+
+        `<td class="${p.tabs?"":"mut"}">${p.tabs??"—"}</td>`+
+        `<td class="l">${p.tabs!==undefined?`<span class="dot ${p.connected?"ok":"bad"}"></span>${p.connected?"connected":"down"}`:`<span class="dot idle"></span>idle`}</td></tr>`;
+    }).join("") :"<tr><td colspan=10 class='empty'>catalog empty</td></tr>";
+    // token share bars
+    const shares=s.per_model.map(m=>({n:m.model,t:m["in"]+m["out"]})).sort((a,b)=>b.t-a.t);
     const mx=Math.max(...shares.map(x=>x.t),1);
     document.getElementById("bars").innerHTML=shares.length?shares.map(x=>
       `<div class="bar"><div class="n" style="color:${mcolor(x.n)}">${x.n}</div>`+
@@ -166,33 +197,12 @@ async function loadStats(){
       `<div class="t">${fmt(x.t)}</div></div>`).join("")
       :"<div class='empty'>no data yet</div>";
     const rt=document.querySelector("#rr tbody");
-    rt.innerHTML=s.recent.length?s.recent.slice(0,8).map(r=>
+    rt.innerHTML=s.recent.length?s.recent.slice(0,9).map(r=>
       `<tr><td class="mc l" style="color:${mcolor(r.model)}">${r.model}</td>`+
       `<td class="num">${fmt(r["in"])}</td><td class="num o">${fmt(r["out"])}</td>`+
       `<td class="lat">${fmt(r.ms)}</td><td>${r.banned?"<span style='color:var(--red)'>BAN</span>":r.ok?"<span class='h'>ok</span>":"<span style='color:var(--red)'>err</span>"}</td></tr>`).join("")
       :"<tr><td colspan=5 class='empty'>—</td></tr>";
   }catch(e){}
-}
-async function loadHealth(){
-  try{
-    const d=await (await fetch("/health")).json();
-    const p=$("p-status");p.textContent=d.status;p.className="pill "+(d.status==="ok"?"ok":"");
-    $("p-uptime").textContent="up "+fmtUp(d.uptime_s||0);
-    const pools=d.pools||{};const names=Object.keys(pools);
-    document.querySelector("#pool tbody").innerHTML=names.length?names.map(n=>{
-      const x=pools[n];
-      return `<tr><td class="mc l" style="color:${mcolor(n)}">${n}</td><td>${x.tabs}</td>`+
-      `<td><span class="dot ${x.connected?"ok":"bad"}"></span>${x.connected?"connected":"down"}</td></tr>`;
-    }).join(""):"<tr><td colspan=3 class='empty'>idle — send a request</td></tr>";
-  }catch(e){$("p-status").textContent="down";}
-}
-async function loadModels(){
-  try{
-    const j=await (await fetch("/v1/models")).json();
-    $("chips").innerHTML=j.data.map(m=>
-      `<span class="chip"><span class="dot ok"></span><span class="mc" style="color:${mcolor(m.id)}">${m.id}</span>`+
-      `<span class="tier ${m.access}">${m.access}</span></span>`).join("");
-  }catch(e){$("chips").innerHTML="<span class='chip' style='color:var(--red)'>catalog unavailable</span>";}
 }
 loadStats();loadHealth();loadModels();
 setInterval(loadStats,4000);setInterval(loadHealth,10000);setInterval(loadModels,60000);
