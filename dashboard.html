@@ -22,12 +22,13 @@ a{color:var(--blue);text-decoration:none}
 .pill.ok{color:var(--ok);border-color:var(--ok)}
 .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin:18px 0 8px}
 .lbl::before{content:"// ";color:var(--amber)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
-.card .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
-.card .v.ok{color:var(--ok)} .card .v.blue{color:var(--blue)} .card .v.red{color:var(--red)} .card .v.amber{color:var(--amber)}
-.card .k{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:2px}
-.card .spark{margin-top:6px;display:block;width:100%;height:26px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 14px;border-top:1px solid var(--line)}
+.stat-row:first-child{border-top:0}
+.stat-row .k{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);white-space:nowrap}
+.stat-row .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat-row .v.ok{color:var(--ok)} .stat-row .v.blue{color:var(--blue)} .stat-row .v.red{color:var(--red)} .stat-row .v.amber{color:var(--amber)}
+.stat-row canvas.spark{display:block;width:90px;height:16px;flex:none}
 table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);text-align:right;padding:9px 14px;background:var(--panel2);font-weight:600;white-space:nowrap}
 th.l{text-align:left}
@@ -74,13 +75,13 @@ td.mut{color:var(--dim)}
   <div class="chips" id="chips"><span class="chip" style="color:var(--dim)">loading…</span></div>
 
   <div class="lbl">total usage — since boot</div>
-  <div class="grid">
-    <div class="card"><canvas class="spark" id="sp-req"></canvas><div class="v" id="t-req">—</div><div class="k">requests</div></div>
-    <div class="card"><canvas class="spark" id="sp-in"></canvas><div class="v blue" id="t-in">—</div><div class="k">input tokens</div></div>
-    <div class="card"><canvas class="spark" id="sp-out"></canvas><div class="v red" id="t-out">—</div><div class="k">output tokens</div></div>
-    <div class="card"><canvas class="spark" id="sp-ms"></canvas><div class="v amber" id="t-ms">—</div><div class="k">avg latency</div></div>
-    <div class="card"><div class="v ok" id="t-succ">—</div><div class="k">success rate</div></div>
-    <div class="card"><div class="v" id="t-ban">—</div><div class="k">banned hits</div></div>
+  <div class="stat">
+    <div class="stat-row"><span class="k">requests</span><canvas class="spark" id="sp-req"></canvas><span class="v" id="t-req">&mdash;</span></div>
+    <div class="stat-row"><span class="k">input tokens</span><canvas class="spark" id="sp-in"></canvas><span class="v blue" id="t-in">&mdash;</span></div>
+    <div class="stat-row"><span class="k">output tokens</span><canvas class="spark" id="sp-out"></canvas><span class="v red" id="t-out">&mdash;</span></div>
+    <div class="stat-row"><span class="k">avg latency</span><canvas class="spark" id="sp-ms"></canvas><span class="v amber" id="t-ms">&mdash;</span></div>
+    <div class="stat-row"><span class="k">success rate</span><span class="v ok" id="t-succ">&mdash;</span></div>
+    <div class="stat-row"><span class="k">banned hits</span><span class="v" id="t-ban">&mdash;</span></div>
   </div>
 
   <div class="lbl">model usage</div>
