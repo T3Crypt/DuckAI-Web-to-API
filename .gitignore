@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.log
+nohup.out
+.env
+benchmark.py
+test_all_models.py
+benchmark_results.json
