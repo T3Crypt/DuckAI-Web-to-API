@@ -218,18 +218,24 @@ async def _openai_stream(pool: ModelPool, prompt: str, model: str, chat_id: str)
             "choices": [{"index": 0, "delta": delta, "finish_reason": finish}],
         }
 
+    t0 = time.time(); tout = 0; ok = False; banned = False
     try:
         yield f"data: {json.dumps(chunk({'role': 'assistant', 'content': ''}, None))}\n\n"
         async for token in pool.stream(prompt):
+            tout += len(token)
             yield f"data: {json.dumps(chunk({'content': token}, None))}\n\n"
         yield f"data: {json.dumps(chunk({}, 'stop'))}\n\n"
         yield "data: [DONE]\n\n"
+        ok = True
     except DuckAIBan as e:
+        banned = True
         yield _err_sse(f"{e} (HTTP 429; set DUCKAI_PROXIES to rotate past bans)")
     except DuckAIError as e:
         yield _err_sse(str(e))
     except Exception as e:  # noqa: BLE001
         yield _err_sse(f"stream failed: {e}")
+    finally:
+        _rec(model, len(prompt), tout, (time.time()-t0)*1000, ok, banned)
 
 
 @app.post("/v1/chat/completions", dependencies=[Depends(require_key)])
@@ -254,12 +260,16 @@ async def chat_completions(req: ChatCompletionRequest):
             _openai_stream(pool, prompt, model, _id()), media_type="text/event-stream"
         )
 
+    t0 = time.time()
     try:
         result = "".join([tok async for tok in pool.stream(prompt)])
     except DuckAIBan as e:
+        _rec(model, len(prompt), 0, (time.time()-t0)*1000, False, True)
         raise HTTPException(status_code=429, detail=f"{e}. Set DUCKAI_PROXIES to rotate past bans.")
     except DuckAIError as e:
+        _rec(model, len(prompt), 0, (time.time()-t0)*1000, False, False)
         raise HTTPException(status_code=502, detail=str(e))
+    _rec(model, len(prompt), len(result), (time.time()-t0)*1000, True, False)
     return {
         "id": _id(),
         "object": "chat.completion",
@@ -326,6 +336,57 @@ async def list_models():
 
 
 _BOOT = time.time()
+
+# --- Usage tracking (in-memory ring buffer + totals) ---
+import collections
+from datetime import datetime, timezone
+
+_USAGE_LOCK = asyncio.Lock()
+_REQS: collections.deque = collections.deque(maxlen=60)   # recent requests
+_TOTALS = {"requests": 0, "in": 0, "out": 0, "ok": 0, "err": 0, "banned": 0}
+_PER_MODEL: dict = {}   # model -> {requests, in, out, ok, err, ms_sum}
+
+
+def _rec(model: str, tin: int, tout: int, ms: float, ok: bool, banned: bool) -> None:
+    _TOTALS["requests"] += 1
+    _TOTALS["in"] += tin
+    _TOTALS["out"] += tout
+    _TOTALS["ok" if ok else "err"] += 1
+    _TOTALS["banned"] += int(banned)
+    m = _PER_MODEL.setdefault(model, {"requests": 0, "in": 0, "out": 0, "ok": 0, "err": 0, "ms_sum": 0.0})
+    m["requests"] += 1
+    m["in"] += tin
+    m["out"] += tout
+    m["ok" if ok else "err"] += 1
+    m["ms_sum"] += ms
+    _REQS.appendleft({
+        "model": model, "in": tin, "out": tout, "ms": round(ms),
+        "ok": ok, "banned": banned, "time": datetime.now(timezone.utc).strftime("%H:%M:%S"),
+    })
+
+
+@app.get("/stats")
+async def stats():
+    now = time.time()
+    per_model = []
+    for m, d in _PER_MODEL.items():
+        total = d["ok"] + d["err"]
+        health = round(100 * d["ok"] / total, 2) if total else 0.0
+        ms_kt = round(d["ms_sum"] / max(d["out"], 1) * 1000) if d["out"] else 0
+        per_model.append({"model": m, "health": health, "ms_per_ktoken": ms_kt,
+                          "requests": d["requests"], "in": d["in"], "out": d["out"]})
+    per_model.sort(key=lambda x: -x["requests"])
+    total = _TOTALS
+    rate = total["ok"] / total["requests"] * 100 if total["requests"] else 0.0
+    return {
+        "boot": _BOOT,
+        "uptime_s": int(now - _BOOT),
+        "totals": total,
+        "success_rate": round(rate, 2),
+        "avg_ms": round((now - _BOOT) and sum(r["ms"] for r in _REQS) / max(len(_REQS), 1), 0),
+        "per_model": per_model,
+        "recent": list(_REQS)[:15],
+    }
 
 
 @app.get("/health")

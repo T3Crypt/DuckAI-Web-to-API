@@ -3,112 +3,136 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DuckAI Web-to-API</title>
+<title>DuckAI Web-to-API — Usage</title>
 <style>
 :root{
-  --bg:#101418; --panel:#161b21; --ink:#d6dbde; --dim:#7d8a91; --line:#242c33;
-  --acc:#e8b64c; --ok:#7fb069; --bad:#c4553d; --mono:ui-monospace,'JetBrains Mono','Cascadia Mono','Fira Code',Menlo,Consolas,monospace;
+  --bg:#0d1117; --panel:#151a24; --panel2:#11151d; --line:#262c38;
+  --ink:#e5e7eb; --dim:#6b7280; --ok:#4ade80; --blue:#60a5fa; --red:#f87171;
+  --amber:#e8b64c; --mono:ui-monospace,'JetBrains Mono','Cascadia Mono','Fira Code',Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.5;padding:0 0 48px}
-a{color:var(--acc);text-decoration:none}
-header{border-bottom:1px solid var(--line);padding:22px 28px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
-h1{font-size:15px;font-weight:600;letter-spacing:.02em}
-h1 span{color:var(--dim);font-weight:400}
-#clock{color:var(--dim)}
-main{max-width:1060px;margin:0 auto;padding:28px 28px 0}
-section{margin-bottom:34px}
-h2{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim);font-weight:600;margin-bottom:12px}
-h2::before{content:"// ";color:var(--acc)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
-.stat{background:var(--panel);padding:14px 16px}
-.stat .v{font-size:22px;font-weight:600;color:var(--ink)}
-.stat .v.ok{color:var(--ok)} .stat .v.bad{color:var(--bad)}
-.stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:3px}
-table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}
-th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);font-weight:600}
-td{padding:9px 14px;border-bottom:1px solid var(--line);font-size:12.5px}
-tr:last-child td{border-bottom:0}
-.tier{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--line)}
-.tier.free{color:var(--ok);border-color:var(--ok)}
-.tier.paid{color:var(--acc);border-color:var(--acc)}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}::-webkit-scrollbar-track{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.5;padding:20px}
+a{color:var(--blue);text-decoration:none}
+.wrap{max-width:1150px;margin:0 auto}
+.hdr{display:flex;justify-content:space-between;align-items:baseline;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px 20px;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.hdr h1{font-size:14px;letter-spacing:.04em}
+.hdr h1 span{color:var(--dim);font-weight:400}
+.pill{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:11px;color:var(--dim)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin:16px 0 8px}
+.lbl::before{content:"// ";color:var(--amber)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+.card .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.card .v.ok{color:var(--ok)} .card .v.blue{color:var(--blue)} .card .v.red{color:var(--red)} .card .v.amber{color:var(--amber)}
+.card .k{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:2px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:2px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);text-align:left;padding:8px 12px;background:var(--panel2);font-weight:600}
+td{padding:7px 12px;border-top:1px solid var(--line);font-size:12.5px;font-variant-numeric:tabular-nums}
+tbody tr:nth-child(even){background:var(--panel2)}
+td.num{text-align:right;color:var(--blue)}
+td.num.o{color:var(--amber)}
+td.lat{color:var(--dim);text-align:right}
+td.t{color:var(--dim)}
+.mc{font-weight:600}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
-.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)} .dot.idle{background:var(--dim)}
-.pool-name{color:var(--ink)}
-footer{max-width:1060px;margin:44px auto 0;padding:0 28px;color:var(--dim);font-size:11px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--red)} .dot.idle{background:var(--dim)}
+.h{color:var(--ok)} .h.mid{color:var(--amber)} .h.low{color:var(--red)}
+.foot{color:var(--dim);font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:14px}
 </style>
 </head>
 <body>
-<header>
-  <h1>DuckAI <span>Web-to-API</span></h1>
-  <div><span id="clock">—</span> &nbsp; <a href="/docs">api docs</a></div>
-</header>
-<main>
-  <section>
-    <h2>status</h2>
-    <div class="grid">
-      <div class="stat"><div class="v" id="s-status">—</div><div class="k">service</div></div>
-      <div class="stat"><div class="v" id="s-models">—</div><div class="k">models in catalog</div></div>
-      <div class="stat"><div class="v" id="s-catalog">—</div><div class="k">catalog</div></div>
-      <div class="stat"><div class="v" id="s-tabs">—</div><div class="k">browser tabs</div></div>
-      <div class="stat"><div class="v" id="s-pools">—</div><div class="k">pools</div></div>
-      <div class="stat"><div class="v" id="s-uptime">—</div><div class="k">uptime</div></div>
+<div class="wrap">
+  <div class="hdr">
+    <h1>DuckAI <span>Web-to-API</span></h1>
+    <div>
+      <span class="pill" id="p-status">—</span>
+      <span class="pill" id="p-uptime">—</span>
+      <a class="pill" href="/docs">api docs</a>
+      <a class="pill" href="/v1/models">models</a>
     </div>
-  </section>
-  <section>
-    <h2>model pools</h2>
-    <table id="pools"><thead><tr><th>pool</th><th>tabs</th><th>browser</th></tr></thead>
-    <tbody><tr><td colspan=3 style="color:var(--dim)">loading…</td></tr></tbody></table>
-  </section>
-  <section>
-    <h2>catalog</h2>
-    <table id="models"><thead><tr><th>model id</th><th>display name</th><th>tier</th></tr></thead>
-    <tbody><tr><td colspan=3 style="color:var(--dim)">loading…</td></tr></tbody></table>
-  </section>
-</main>
-<footer>
-  <div>duck.ai session relay · unofficial · not affiliated with DuckDuckGo</div>
-  <div>refresh 5s</div>
-</footer>
-<script>
+  </div>
 
-const $ = id => document.getElementById(id);
-function fmtUptime(ms){
-  const s = Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60);
-  return d? d+"d "+h+"h" : h? h+"h "+m+"m" : (m? m+"m " : "") + (s%60)+"s";
-}
-function paint(d){
-  $("s-status").textContent = d.status||"—";
-  $("s-status").className = "v " + (d.status==="ok"?"ok":"bad");
-  $("s-models").textContent = d.models ?? "—";
-  const cat = $("s-catalog"); cat.textContent = d.catalog_live? "live":"fallback";
-  cat.className = "v " + (d.catalog_live?"ok":"bad");
-  const pools = d.pools||{};
-  const names = Object.keys(pools);
-  let tabs=0, conn=0;
-  names.forEach(n=>{tabs+=pools[n].tabs; if(pools[n].connected)conn++;});
-  $("s-tabs").textContent = tabs;
-  $("s-pools").textContent = names.length+" ("+conn+" up)";
-  $("s-uptime").textContent = d.uptime_s != null ? fmtUptime(d.uptime_s*1000) : "—";
-  const tb = document.querySelector("#pools tbody");
-  tb.innerHTML = names.length? names.map(n=>{
-    const p=pools[n];
-    return "<tr><td class='pool-name'>"+n+"</td><td>"+p.tabs+"</td><td><span class='dot "+(p.connected?"ok":"bad")+"'></span>"+(p.connected?"connected":"down")+"</td></tr>";
-  }).join("") : "<tr><td colspan=3 style='color:var(--dim)'>no pools yet — send a request</td></tr>";
-}
-async function paintModels(){
+  <div class="lbl">total usage — since boot</div>
+  <div class="grid">
+    <div class="card"><div class="v" id="t-req">—</div><div class="k">requests</div></div>
+    <div class="card"><div class="v blue" id="t-in">—</div><div class="k">input tokens</div></div>
+    <div class="card"><div class="v red" id="t-out">—</div><div class="k">output tokens</div></div>
+    <div class="card"><div class="v ok" id="t-succ">—</div><div class="k">success rate</div></div>
+    <div class="card"><div class="v amber" id="t-ms">—</div><div class="k">avg latency</div></div>
+    <div class="card"><div class="v" id="t-ban">—</div><div class="k">banned hits</div></div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <div class="lbl">model usage</div>
+      <table id="pm"><thead><tr><th>model</th><th style="text-align:right">req</th><th style="text-align:right">health</th><th>ms / ktoken</th><th style="text-align:right">in</th><th style="text-align:right">out</th></tr></thead>
+      <tbody><tr><td colspan="6" style="color:var(--dim)">no requests yet</td></tr></tbody></table>
+    </div>
+    <div>
+      <div class="lbl">pools</div>
+      <table id="pool"><thead><tr><th>model</th><th>tabs</th><th>browser</th></tr></thead>
+      <tbody><tr><td colspan="3" style="color:var(--dim)">—</td></tr></tbody></table>
+      <div class="lbl">recent requests</div>
+      <table id="rr"><thead><tr><th>model</th><th style="text-align:right">in</th><th style="text-align:right">out</th><th style="text-align:right">ms</th><th style="text-align:right">status</th></tr></thead>
+      <tbody><tr><td colspan="5" style="color:var(--dim)">—</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div>duck.ai session relay · unofficial · for learning purposes</div>
+    <div>stats 4s · pools 10s</div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>(n??0).toLocaleString('id-ID');
+function fmtUp(s){const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+"d "+h+"h":h?h+"h "+m+"m":m+"m "+(s%60)+"s";}
+const MCOLORS=["#67e8f9","#c4b5fd","#fdba74","#f9a8d4","#4ade80","#e8b64c","#93c5fd","#f87171"];
+function mcolor(name){let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;return MCOLORS[h%MCOLORS.length];}
+function healthCls(h){return h>=90?"h":h>=75?"h mid":"h low";}
+async function loadStats(){
   try{
-    const r = await fetch("/v1/models"); const j = await r.json();
-    const tb = document.querySelector("#models tbody");
-    tb.innerHTML = j.data.map(m=>
-      "<tr><td class='pool-name'>"+m.id+"</td><td style='color:var(--dim)'>"+(m.display_name||"")+"</td><td><span class='tier "+m.access+"'>"+m.access+"</span></td></tr>"
-    ).join("");
+    const s=await (await fetch("/stats")).json();
+    $("t-req").textContent=fmt(s.totals.requests);
+    $("t-in").textContent=fmt(s.totals.in);
+    $("t-out").textContent=fmt(s.totals.out);
+    $("t-succ").textContent=s.success_rate+"%";
+    $("t-ms").textContent=s.avg_ms?fmt(s.avg_ms)+" ms":"—";
+    $("t-ban").textContent=fmt(s.totals.banned);
+    const tb=document.querySelector("#pm tbody");
+    tb.innerHTML=s.per_model.length?s.per_model.map(m=>
+      `<tr><td class="mc" style="color:${mcolor(m.model)}">${m.model}</td><td style="text-align:right">${fmt(m.requests)}</td>`+
+      `<td class="${healthCls(m.health)}" style="text-align:right">${m.health}%</td><td class="lat">${fmt(m.ms_per_ktoken)}</td>`+
+      `<td class="num">${fmt(m["in"])}</td><td class="num o">${fmt(m["out"])}</td></tr>`).join("")
+      :"<tr><td colspan=6 style='color:var(--dim)'>no requests yet</td></tr>";
+    const rt=document.querySelector("#rr tbody");
+    rt.innerHTML=s.recent.length?s.recent.map(r=>
+      `<tr><td class="mc" style="color:${mcolor(r.model)}">${r.model}</td>`+
+      `<td class="num">${fmt(r["in"])}</td><td class="num o">${fmt(r["out"])}</td>`+
+      `<td class="lat">${fmt(r.ms)}</td><td class="t">${r.banned?"<span style='color:var(--red)'>BAN</span>":r.ok?"<span class='h'>ok</span>":"<span style='color:var(--red)'>err</span>"}</td></tr>`).join("")
+      :"<tr><td colspan=5 style='color:var(--dim)'>—</td></tr>";
   }catch(e){}
 }
-setInterval(()=>{$("clock").textContent=new Date().toLocaleTimeString(); fetch("/health").then(r=>r.json()).then(paint).catch(()=>{ $("s-status").textContent="down"; $("s-status").className="v bad"; });},5000);
-fetch("/health").then(r=>r.json()).then(paint).catch(()=>{ $("s-status").textContent="down"; $("s-status").className="v bad"; });
-$("clock").textContent=new Date().toLocaleTimeString();
-paintModels(); setInterval(paintModels, 30000);
+async function loadHealth(){
+  try{
+    const d=await (await fetch("/health")).json();
+    const p=$("p-status");p.textContent=d.status;p.className="pill "+(d.status==="ok"?"ok":"");
+    $("p-uptime").textContent="up "+fmtUp(d.uptime_s||0);
+    const pools=d.pools||{};const names=Object.keys(pools);
+    let tabs=0;names.forEach(n=>tabs+=pools[n].tabs);
+    document.querySelector("#pool tbody").innerHTML=names.length?names.map(n=>{
+      const x=pools[n];
+      return `<tr><td class="mc" style="color:${mcolor(n)}">${n}</td><td>${x.tabs}</td>`+
+      `<td><span class="dot ${x.connected?"ok":"bad"}"></span>${x.connected?"connected":"down"}</td></tr>`;
+    }).join(""):"<tr><td colspan=3 style='color:var(--dim)'>idle — send a request</td></tr>";
+  }catch(e){$("p-status").textContent="down";}
+}
+loadStats();loadHealth();
+setInterval(loadStats,4000);setInterval(loadHealth,10000);
 </script>
 </body>
 </html>
