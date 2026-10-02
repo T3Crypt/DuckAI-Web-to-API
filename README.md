@@ -1,18 +1,18 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/duck.ai-session%20relay-e8b64c?style=flat-square" alt="duck.ai relay">
-  &nbsp;
-  <img src="https://img.shields.io/badge/OpenAI-compatible-7fb069?style=flat-square" alt="OpenAI compatible">
-  &nbsp;
-  <img src="https://img.shields.io/badge/streaming-SSE-242c33?style=flat-square" alt="SSE streaming">
-</p>
+<div align="center">
 
-<h1 align="center">DuckAI Web-to-API</h1>
+# DuckAI Web-to-API
 
-<p align="center">
-  <strong>One OpenAI endpoint for the entire duck.ai catalog.</strong><br>
-  A real Chrome browser behind the scenes. No API key. No token cost.<br>
-  English | <a href="./README.id.md">Bahasa Indonesia</a>
-</p>
+**One OpenAI endpoint for the entire duck.ai catalog.**
+
+A real Chrome browser behind the scenes. No API key. No token cost.
+
+[English](README.md) | [Bahasa Indonesia](README.id.md)
+
+<img src="https://img.shields.io/badge/duck.ai-session%20relay-e8b64c?style=flat-square" alt="duck.ai relay">
+<img src="https://img.shields.io/badge/OpenAI-compatible-7fb069?style=flat-square" alt="OpenAI compatible">
+<img src="https://img.shields.io/badge/streaming-SSE-242c33?style=flat-square" alt="SSE streaming">
+
+</div>
 
 ---
 
